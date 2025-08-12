@@ -1,0 +1,79 @@
+---
+title: "Streaming Fraud Analysis"
+author: "Evan Frangipane"
+format:
+  gfm:
+    toc: true
+    code-fold: true
+    embed-resources: true
+    output-file: README.md
+execute:
+  echo: true
+  warning: false
+  message: false
+---
+
+## 🧠 Goal
+
+This project is a sandbox for running ML on streaming fraud (bots).
+I could not find a decent dataset for streaming data as Spotify (🤮) scrubbed the internet of the MSSD.
+The next best option was to create my own streaming data.
+This gave me a ton of customizability, but it's difficult to say how well this matches up to data from real users.
+With my dataset filled with baseline users I can add in the bots and see what techniques are best at picking them out.
+
+
+---
+
+## 📊 Baseline Data
+
+I defined many parameters to help me create the dataset including number of users, number of artists, number of tracks per artists (avg), start and end dates, artist and track popularity params, track length params, etc.
+Also, I implemented a weekend boost to streams.
+
+Here is a snippet of the track dataframe:
+
+| artist_id | track_id            | track_len_sec | artist_popularity | track_popularity | total_track_popularity |
+|-----------|--------------------|---------------|-------------------|------------------|------------------------|
+| artist_1  | artist_1_track_1   | 234.836       | 0.104328          | 0.097664         | 0.010189               |
+| artist_1  | artist_1_track_2   | 179.183       | 0.104328          | 0.072737         | 0.007589               |
+| artist_1  | artist_1_track_3   | 237.418       | 0.104328          | 0.061220         | 0.006387               |
+| artist_1  | artist_1_track_4   | 274.281       | 0.104328          | 0.054172         | 0.005652               |
+| artist_1  | artist_1_track_5   | 188.202       | 0.104328          | 0.049269         | 0.005140               |
+
+Next I defined some parameters for individual users like do they like single artists sessions or mixed, more popular music, avg songs per session, avg sessions per day, song skipping probability.
+
+Here is a snippet of the user dataframe:
+
+| user_id | mix_sesh | pop_fan  | sesh_len | sesh_num | skip_prob |
+|---------|----------|----------|----------|----------|-----------|
+| 1       | 0.770236 | 0.449934 | 7        | 1        | 0.722269  |
+| 2       | 0.678292 | 0.198552 | 7        | 2        | 0.449958  |
+| 3       | 0.631687 | 0.335670 | 2        | 1        | 0.155921  |
+| 4       | 0.583200 | 0.587551 | 8        | 2        | 0.538524  |
+| 5       | 0.622390 | 0.508089 | 5        | 1        | 0.514179  |
+
+From here I generated the stream data.
+I looped over each user and rolled dice for streams over the streaming period.
+
+Here is a snippet of the streams dataframe:
+
+| user_id | session_id | timestamp                   | artist_id | track_id              | track_duration_sec | listen_duration_sec | is_bot |
+|---------|------------|-----------------------------|-----------|-----------------------|--------------------|---------------------|--------|
+| 1       | 0          | 2025-01-02 21:41:31.000000000 | artist_30 | artist_30_track_30    | 172.992492         | 54.357032           | False  |
+| 1       | 0          | 2025-01-02 21:42:25.357031881 | artist_30 | artist_30_track_10    | 205.152908         | 205.152908          | False  |
+| 1       | 0          | 2025-01-02 21:45:50.509940231 | artist_30 | artist_30_track_25    | 209.933866         | 96.338037           | False  |
+| 1       | 0          | 2025-01-02 21:47:26.847977059 | artist_30 | artist_30_track_9     | 196.974013         | 35.726356           | False  |
+| 1       | 1          | 2025-01-03 06:48:22.000000000 | artist_8  | artist_8_track_9      | 89.516270          | 39.074505           | False  |
+
+---
+
+## Botting data
+
+I want to create a variety of bots with different behavior to see what we are sensitive to.
+The first type of botting I implemented is long duration stream bots for single artists.
+One can imagine purchasing N streams for an artist over a time period.
+I create n bots that stream for some long duration (like 5 hours) then cool off for some waiting period (like 12 hours).
+The N total streams are divided among the bots and they are staggered throughout the time period but they still have regular patterns.
+
+Searching for these bots will involve looking for repeating patterns that would be suspicious of a human user.
+To improve the bot I want to create some human-like baseline data for the bot and then on top of that have long duration streams to try and mask the bottiness.
+This will require the analyst to come up with more clever methods of detection.
