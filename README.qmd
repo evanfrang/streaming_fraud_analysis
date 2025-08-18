@@ -24,7 +24,7 @@ With my dataset filled with baseline users I can add in the bots and see what te
 
 ---
 
-## 📊 Baseline Data
+## 🤹 Baseline Data
 
 I defined many parameters to help me create the dataset including number of users, number of artists, number of tracks per artists (avg), start and end dates, artist and track popularity params, track length params, etc.
 Also, I implemented a weekend boost to streams.
@@ -66,7 +66,7 @@ Here is a snippet of the streams dataframe:
 
 ---
 
-## Botting data
+## 🤖 Botting data
 
 I want to create a variety of bots with different behavior to see what we are sensitive to.
 The first type of botting I implemented is long duration stream bots for single artists.
