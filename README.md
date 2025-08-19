@@ -246,3 +246,11 @@ that would be suspicious of a human user. To improve the bot I want to
 create some human-like baseline data for the bot and then on top of that
 have long duration streams to try and mask the bottiness. This will
 require the analyst to come up with more clever methods of detection.
+
+------------------------------------------------------------------------
+
+## TODO
+
+Peakiness of streams -\> high #s for weeks, month? -\> bot? User
+variations -\> users who increase, decrease listening Fix the bot number
+of sessions scaling to work more as expected
