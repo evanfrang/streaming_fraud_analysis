@@ -82,6 +82,5 @@ This will require the analyst to come up with more clever methods of detection.
 
 ## TODO
 
-Peakiness of streams -> high #s for weeks, month? -> bot?
-User variations -> users who increase, decrease listening
-Fix the bot number of sessions scaling to work more as expected
+- User variations -> users who increase, decrease listening
+- Bots tend not to dip to < 10 streams -> either use as a metric or fix
