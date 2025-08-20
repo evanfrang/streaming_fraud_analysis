@@ -2,14 +2,29 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import numpy as np
+import matplotlib
+
+# ------------------------
+# Page Layout
+# ------------------------
+
+st.set_page_config(
+    page_title="Suspicious User Detection",
+    page_icon="🔎",
+    layout="wide"
+)
+
+# ------------------------
+# Data
+# ------------------------
 
 @st.cache_data
 def load_user_activity():
-    return pd.read_pickle("user_activity.pkl")
+    return pd.read_pickle("data/user_activity.pkl")
 
 @st.cache_data
 def load_user_days():
-    return pd.read_pickle("user_day_counts.pkl")
+    return pd.read_pickle("data/user_day_counts.pkl")
 
 user_activity = load_user_activity()
 user_days = load_user_days()
@@ -24,10 +39,10 @@ numeric_cols = user_activity.select_dtypes(include="number").columns.tolist()
 selected_metric = st.sidebar.selectbox(
     "Filter metric", 
     numeric_cols, 
-    index=numeric_cols.index("total_streams") if "total_streams" in numeric_cols else 0
+    index=numeric_cols.index("high_stream_days") if "total_streams" in numeric_cols else 0
 )
 
-threshold = st.sidebar.number_input(f"Minimum {selected_metric}", value=60.0)
+threshold = st.sidebar.number_input(f"Minimum {selected_metric}", value=1.0)
 
 sus_users = user_activity[user_activity[selected_metric] >= threshold]
 
@@ -36,15 +51,26 @@ st.write(f"### {len(sus_users)} Suspicious Users (filtered by {selected_metric} 
 # -------------------------
 # Leaderboard
 # -------------------------
-st.dataframe(
-    sus_users.sort_values(selected_metric, ascending=False)
-)
+styled = sus_users.sort_values(selected_metric, ascending=False).style.format(
+    precision=2
+).background_gradient(cmap="Blues", subset=[selected_metric])
+
+st.dataframe(styled, use_container_width=True, height=500)
 
 # -------------------------
 # Distribution plot
 # -------------------------
-fig = px.histogram(user_activity, x=selected_metric, nbins=50, title=f"Distribution of {selected_metric}")
-st.plotly_chart(fig, use_container_width=True)
+c1, c2 = st.columns(2)
+
+with c1:
+    fig_all = px.histogram(user_activity, x=selected_metric, nbins=50,
+                           title=f"Distribution of {selected_metric} (All Users)")
+    st.plotly_chart(fig_all, use_container_width=True)
+
+with c2:
+    fig_sus = px.histogram(sus_users, x=selected_metric, nbins=50,
+                           title=f"Distribution of {selected_metric} (Suspicious Only)")
+    st.plotly_chart(fig_sus, use_container_width=True)
 
 # -------------------------
 # Per-user drill down
@@ -55,18 +81,19 @@ user_choice = st.selectbox("Pick a user_id", sus_users["user_id"].unique())
 if user_choice:
     try:
         # Daily Streams
-        user_day_counts = pd.read_pickle("user_day_counts.pkl")
-        user_day_counts = user_day_counts[user_day_counts["user_id"] == user_choice]
-        fig2 = px.line(user_day_counts, x="timestamp", y="daily_streams", title=f"Daily streams for {user_choice}")
-        st.plotly_chart(fig2, use_container_width=True)
+        user_days = user_days[user_days["user_id"] == user_choice]
+        fig2 = px.line(user_days, x="timestamp", y="daily_streams", 
+                       title=f"Daily streams for User {user_choice}")
+        #fig2.update_traces(line=dict(color="crimson", width=2))
 
         # Listening %
-        fig3 = px.line(user_day_counts, x="timestamp", y="listen_pct", title=f"Daily Listening % for {user_choice}")
-        st.plotly_chart(fig3, use_container_width=True)
+        fig3 = px.line(user_days, x="timestamp", y="listen_pct", title=f"Daily Listening % for User {user_choice}")
+        #fig3.update_traces(line=dict(color="green", width=2))
+
 
         # Autocorrelation
         user_series = (
-            user_day_counts[user_day_counts['user_id'] == user_choice]
+            user_days[user_days['user_id'] == user_choice]
             .set_index('timestamp')
             .asfreq('D', fill_value=0)['daily_streams']
         )
@@ -80,9 +107,9 @@ if user_choice:
             x=lags,
             y=ac,
             labels={'x': 'Lag (days)', 'y': 'Autocorrelation'},
-            title=f"Autocorrelation for {user_choice}"
+            title=f"Autocorrelation for User {user_choice}"
         )
-        st.plotly_chart(fig4, use_container_width=True)
+        #fig4.update_traces(line=dict(color="purple", width=2))
 
         # Fourier Transform
         values = user_series.values - user_series.mean()
@@ -98,9 +125,17 @@ if user_choice:
             x=freqs,
             y=power,
             labels={'x': 'Frequency (cycles per day)', 'y': 'Power'},
-            title=f"Fourier Transform Spectrum for {user_choice}"
+            title=f"Fourier Transform Spectrum for User {user_choice}"
         )
-        st.plotly_chart(fig5, use_container_width=True)
+        #fig5.update_traces(line=dict(color="orange", width=2))
+
+        c1, c2 = st.columns(2)
+        c1.plotly_chart(fig2, use_container_width=True)
+        c2.plotly_chart(fig3, use_container_width=True)
+
+        c3, c4 = st.columns(2)
+        c3.plotly_chart(fig4, use_container_width=True)
+        c4.plotly_chart(fig5, use_container_width=True)
 
     except FileNotFoundError:
         st.info("Per-day data not available — only summary features shown.")
