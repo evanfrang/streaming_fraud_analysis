@@ -84,3 +84,10 @@ This will require the analyst to come up with more clever methods of detection.
 
 - User variations -> users who increase, decrease listening
 - Bots tend not to dip to < 10 streams -> either use as a metric or fix
+- Add in analysis that considers what artists, skip percentage, etc.
+- ML techniques in addition to signal analysis
+
+## Isolation Forest
+- Right now the bots will be too obvious if you look at days active so we will need to train on aggregate stats
+- However, I don't want the time sensitive features to fall through the cracks
+- One solution is to create "real" users that have variations or limited periods of listening as mentioned in todo
