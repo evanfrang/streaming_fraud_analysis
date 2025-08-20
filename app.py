@@ -143,27 +143,28 @@ if user_choice:
         st.write(user_activity[user_activity["user_id"] == user_choice].T)
 
 
-ml_tab = st.tab("🧠 ML Anomalies")
-with ml_tab:
-    st.write("### Users flagged by Isolation Forest")
+st.write("### Users flagged by Isolation Forest")
 
-    features = user_activity.select_dtypes(include="number").columns.tolist()
-    X = user_activity[features].drop(columns=["user_id"])
-    
-    iso = IsolationForest(n_estimators=100, contamination=0.05, random_state=13)
-    iso.fit(features)
-    
-    user_activity["anomaly_score"] = iso.decision_function(features)
-    user_activity["is_anomaly"] = iso.predict(features)  
-    
-    
-    ml_anomalies = user_activity[user_activity["is_anomaly"] == -1].copy()
-    
-    st.dataframe(
-        ml_anomalies.sort_values("anomaly_score"),
-        use_container_width=True,
-        height=500
-    )
+features = user_activity.select_dtypes(include="number").columns.tolist()
+X = user_activity[features].drop(columns=["user_id"])
 
-    corrs = features.corrwith(user_activity["anomaly_score"]).sort_values(key=abs, ascending=False)
-    st.bar_chart(corrs)
+iso = IsolationForest(n_estimators=100, contamination=0.05, random_state=13)
+iso.fit(X)
+
+user_activity["anomaly_score"] = iso.decision_function(X)
+user_activity["is_anomaly"] = iso.predict(X)
+user_activity["is_bot"] = user_activity['user_id'] >= 300 
+# the bots are 300 and up in this dataset
+# this should be done better so we don't have issues later
+
+
+ml_anomalies = user_activity[user_activity["is_anomaly"] == -1].copy()
+
+st.dataframe(
+    ml_anomalies.sort_values("anomaly_score"),
+    use_container_width=True,
+    height=500
+)
+
+#corrs = X.corrwith(user_activity["anomaly_score"]).sort_values(key=abs, ascending=False)
+#st.bar_chart(corrs)
