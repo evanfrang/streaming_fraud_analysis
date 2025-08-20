@@ -8,7 +8,6 @@ __pycache__/
 
 # Datasets
 *.csv
-*.pkl
 
 # Distribution / packaging
 .Python
