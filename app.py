@@ -153,8 +153,8 @@ iso.fit(X)
 
 user_activity["anomaly_score"] = iso.decision_function(X)
 user_activity["is_anomaly"] = iso.predict(X)
-user_activity["is_bot"] = user_activity['user_id'] >= 300 
-# the bots are 300 and up in this dataset
+user_activity["is_bot"] = user_activity['user_id'] >= 301 
+# the bots are 301 and up in this dataset
 # this should be done better so we don't have issues later
 
 
