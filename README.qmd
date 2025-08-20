@@ -13,6 +13,8 @@ execute:
   message: false
 ---
 
+[Live Streamlit demo of this repo in action](https://streamingfraud.streamlit.app/)
+
 ## 🧠 Goal
 
 This project is a sandbox for running ML on streaming fraud (bots).

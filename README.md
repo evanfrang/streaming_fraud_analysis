@@ -1,6 +1,9 @@
 # Streaming Fraud Analysis
 Evan Frangipane
 
+[Live Streamlit demo of this repo in
+action](https://streamingfraud.streamlit.app/)
+
 ## 🧠 Goal
 
 This project is a sandbox for running ML on streaming fraud (bots). I
@@ -264,4 +267,4 @@ require the analyst to come up with more clever methods of detection.
 -   However, I don’t want the time sensitive features to fall through
     the cracks
 -   One solution is to create “real” users that have variations or
-    limited periods of listening as outlined in todo
+    limited periods of listening as mentioned in todo
