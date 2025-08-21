@@ -55,7 +55,7 @@ st.write(f"### {len(sus_users)} Suspicious Users (filtered by {selected_metric} 
 # -------------------------
 # Leaderboard
 # -------------------------
-styled = sus_users.sort_values(selected_metric, ascending=False).style.format(
+styled = sus_users.sort_values(selected_metric, ascending=False).set_index("user_id").style.format(
     precision=2
 ).background_gradient(cmap="Blues", subset=[selected_metric])
 
@@ -164,7 +164,7 @@ user_activity["is_bot"] = user_activity['user_id'] >= 301
 ml_anomalies = user_activity[user_activity["is_anomaly"] == -1].copy()
 
 st.dataframe(
-    ml_anomalies.sort_values("anomaly_score"),
+    ml_anomalies.sort_values("anomaly_score").set_index("user_id"),
     use_container_width=True,
     height=500
 )
