@@ -4,6 +4,7 @@ import plotly.express as px
 import numpy as np
 import matplotlib
 from sklearn.ensemble import IsolationForest
+from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
 
 # ------------------------
 # Page Layout
@@ -14,6 +15,8 @@ st.set_page_config(
     page_icon="🔎",
     layout="wide"
 )
+
+st.title("Fradulent Streaming Data")
 
 # ------------------------
 # Data
@@ -148,7 +151,7 @@ st.write("### Users flagged by Isolation Forest")
 features = user_activity.select_dtypes(include="number").columns.tolist()
 X = user_activity[features].drop(columns=["user_id"])
 
-iso = IsolationForest(n_estimators=100, contamination=0.05, random_state=13)
+iso = IsolationForest(n_estimators=300, contamination=0.08, random_state=13)
 iso.fit(X)
 
 user_activity["anomaly_score"] = iso.decision_function(X)
@@ -166,5 +169,35 @@ st.dataframe(
     height=500
 )
 
+user_activity["is_anomaly"] = user_activity["is_anomaly"].apply(lambda x: 1 if x==-1 else 0)
+user_activity["is_bot"] = user_activity["is_bot"].astype(int)
+
 #corrs = X.corrwith(user_activity["anomaly_score"]).sort_values(key=abs, ascending=False)
 #st.bar_chart(corrs)
+
+st.markdown("#### Isolation Forest Performance")
+
+prec, rec, f1, _ = precision_recall_fscore_support(
+    user_activity["is_bot"], user_activity["is_anomaly"], average=None
+)
+
+metrics_df = pd.DataFrame({
+    "Metric": ["Precision", "Recall", "F1 Score"],
+    "Value": [prec, rec, f1]
+})
+
+scores_df = pd.DataFrame({
+    "Precision": prec,
+    "Recall": rec,
+    "F1 Score": f1
+}, index=["Normal", "Anomaly"])
+
+st.table(scores_df)
+cm = confusion_matrix(user_activity["is_bot"], user_activity["is_anomaly"])
+cm_df = pd.DataFrame(
+    cm,
+    index=["Actual Normal", "Actual Anomaly"],
+    columns=["Predicted Normal", "Predicted Anomaly"]
+)
+st.markdown("#### Confusion Matrix")
+st.table(cm_df)
