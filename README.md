@@ -244,11 +244,31 @@ period (like 12 hours). The N total streams are divided among the bots
 and they are staggered throughout the time period but they still have
 regular patterns.
 
-Searching for these bots will involve looking for repeating patterns
-that would be suspicious of a human user. To improve the bot I want to
-create some human-like baseline data for the bot and then on top of that
-have long duration streams to try and mask the bottiness. This will
-require the analyst to come up with more clever methods of detection.
+Instead of every bot having the same duration it was randomized somewhat
+to prevent easy detection.
+
+------------------------------------------------------------------------
+
+## Isolation Forest
+
+Simple isolation forest for the aggregated features Results on the
+Streamlit dashboard for anomalous users.
+
+------------------------------------------------------------------------
+
+## Time Series Analysis
+
+I ran the streaming period for one year and just looked at one artists
+without bots. I then injected periods of very high listening over the
+course of a few days. Then I ran prophet hyperparam search and cross
+validation to minimize mean squared error. Finally, I looked for
+elevated listening (outside uncertainty) that occured for 3 days or more
+to find suspicious spikes.
+
+<figure>
+<img src="images/timeseries.png" alt="timeser" />
+<figcaption aria-hidden="true">timeser</figcaption>
+</figure>
 
 ------------------------------------------------------------------------
 
@@ -259,12 +279,3 @@ require the analyst to come up with more clever methods of detection.
     fix
 -   Add in analysis that considers what artists, skip percentage, etc.
 -   ML techniques in addition to signal analysis
-
-## Isolation Forest
-
--   Right now the bots will be too obvious if you look at days active so
-    we will need to train on aggregate stats
--   However, I don’t want the time sensitive features to fall through
-    the cracks
--   One solution is to create “real” users that have variations or
-    limited periods of listening as mentioned in todo
