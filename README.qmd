@@ -89,12 +89,12 @@ Results on the Streamlit dashboard for anomalous users.
 
 ## Time Series Analysis
 
-I ran the streaming period for one year and just looked at one artists without bots.
+I ran the streaming period for one year and just looked at one artist without bots.
 I then injected periods of very high listening over the course of a few days.
 Then I ran prophet hyperparam search and cross validation to minimize mean squared error.
 Finally, I looked for elevated listening (outside uncertainty) that occured for 3 days or more to find suspicious spikes.
 
-![timeser](images/timeseries.png)
+![](images/timeseries.png)
 
 ---
 
