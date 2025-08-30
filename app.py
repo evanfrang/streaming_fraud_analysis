@@ -197,20 +197,61 @@ with tab2:
 # -------------------------
 
 with tab3:
-    st.subheader("Time Series Rule-Based Detection")
+    st.subheader("Time Series Detection")
 
-    threshold_val = st.number_input("Stream threshold", min_value=1, value=100, step=10)
-    consec_days = st.number_input("Consecutive days above threshold", min_value=1, value=3, step=1)
+    user_threshold = st.slider(
+        "Threshold",
+        value=float(time_series["y"].max() * 1.2),
+        step=1.0
+    )
+
+    consec_days = st.number_input(
+        "Minimum consecutive days above threshold",
+        min_value=1,
+        value=3,
+        step=1
+    )
 
     time_series["day_date"] = pd.to_datetime(time_series["day_date"])
+
+    df = time_series.copy()
+
+    df["above_thresh"] = df["y"] > user_threshold
+    df["consec_flag"] = df["above_thresh"].rolling(window=consec_days, min_periods=1).sum() >= consec_days
 
     fig = px.scatter(time_series, x="day_date", y="y", title="Time Series with Mean & Bounds")
     fig.update_traces(marker=dict(symbol="x", size=7, color="black"))
 
+    flagged_days = df.loc[df["consec_flag"], "day_date"]
+    if not flagged_days.empty:
+        ranges = []
+        start = flagged_days.iloc[0]
+        prev = start
+        for current in flagged_days.iloc[1:]:
+            if (current - prev).days > 1:
+                ranges.append((start, prev))
+                start = current
+            prev = current
+        ranges.append((start, prev))
+
+        delta = pd.Timedelta(days=4)
+        for start, end in ranges:
+        
+            fig.add_shape(
+                type="rect",
+                x0=start - delta, x1=end+delta,
+                y0=0, y1=1,
+                yref="paper",
+                fillcolor="orange",
+                opacity=0.2,
+                line_width=0,
+                layer="below"
+            )
+
     # Add the bounds as a shaded band
     fig.add_scatter(
-        x=pd.concat([time_series["day_date"], time_series["day_date"][::-1]]),
-        y=pd.concat([time_series["lower_1"], time_series["upper_1"][::-1]]),
+        x=pd.concat([df["day_date"], df["day_date"][::-1]]),
+        y=pd.concat([df["lower_1"], df["upper_1"][::-1]]),
         fill="toself",
         fillcolor="rgba(0,80,200,0.2)",
         line=dict(color="rgba(255,255,255,0)"),
@@ -220,8 +261,8 @@ with tab3:
     )
 
     fig.add_scatter(
-        x=pd.concat([time_series["day_date"], time_series["day_date"][::-1]]),
-        y=pd.concat([time_series["lower_2"], time_series["upper_2"][::-1]]),
+        x=pd.concat([df["day_date"], df["day_date"][::-1]]),
+        y=pd.concat([df["lower_2"], df["upper_2"][::-1]]),
         fill="toself",
         fillcolor="rgba(0,200,80,0.2)",
         line=dict(color="rgba(255,255,255,0)"),
@@ -231,11 +272,18 @@ with tab3:
     )
 
     fig.add_scatter(
-        x=time_series["day_date"],
-        y=time_series["y_base"],
+        x=df["day_date"],
+        y=df["y_base"],
         mode="lines",
         line=dict(color="red"),
         name="GP Mean"
+    )
+
+    fig.add_hline(
+        y=user_threshold,
+        line=dict(color="red", width=2, dash="dash"),
+        showlegend=True,
+        name="Threshold"
     )
 
     fig.update_layout(
@@ -250,5 +298,7 @@ with tab3:
         ),
         legend=dict(font=dict(size=16))
     )
+
+    
 
     st.plotly_chart(fig, use_container_width=True)
