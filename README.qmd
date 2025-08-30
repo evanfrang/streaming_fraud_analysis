@@ -89,14 +89,15 @@ Results on the Streamlit dashboard for anomalous users.
 
 ## ⌛ Time Series Analysis
 
-I ran the streaming period for one year and just looked at one artist without bots.
-I then injected periods of very high listening over the course of a few days.
-Then I ran prophet hyperparam search and cross validation to minimize mean squared error.
-Finally, I looked for elevated listening (outside uncertainty) that occured for 3 days or more to find suspicious spikes.
+I ran the streaming period for two years and just looked at one artist without bots.
+I wanted to simulate some bot injections as well as a month of increased listening to simulate an album release.
+Got a baseline mean streams with pyro Gaussian Process. Uncertainty calculated with rolling MAD with a large window 100 days.
+Finally, I looked for elevated listening (outside uncertainty) that occured for 3 days or more concurrent to find suspicious spikes.
 
 ![](images/timeseries.png)
 
-The elevated listening periods are highlighted in yellow.
+The elevated listening periods are highlighted in orange.
+
 
 ---
 
