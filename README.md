@@ -260,15 +260,16 @@ Streamlit dashboard for anomalous users.
 
 I ran the streaming period for two years and just looked at one artist
 without bots. I wanted to simulate some bot injections as well as a
-month of increased listening to simulate an album release. Got a
-baseline mean streams with pyro Gaussian Process. Uncertainty calculated
-with rolling MAD with a large window 100 days. Finally, I looked for
-elevated listening (outside uncertainty) that occured for 3 days or more
-concurrent to find suspicious spikes.
+month of increased listening to simulate an album release. The two short
+term bot injections were around 2025-05 and 2025-11. The increased month
+of listening around the album release was around 2026-04. Baseline mean
+streams with pyro Gaussian Process seen in red. Uncertainty calculated
+with rolling MAD with a large window 100 days shaded regions at 1x and
+2x. Finally, I looked for elevated listening (outside uncertainty) that
+occured for 3 days or more concurrent to find suspicious spikes seen in
+orange.
 
 ![](images/timeseries.png)
-
-The elevated listening periods are highlighted in orange.
 
 ------------------------------------------------------------------------
 
